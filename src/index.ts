@@ -13,8 +13,8 @@ console.log(process.env.PORT);
 const app: Application = express();
 app.use(bodyParser.json());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/admin/users", adminRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin/users", adminRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
