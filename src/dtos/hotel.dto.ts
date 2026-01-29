@@ -2,7 +2,7 @@ import z from "zod";
 import { HotelSchema } from "../types/hotel.types";
 
 export const CreateHotelDTO = HotelSchema.pick({
-  hotelname: true,
+  hotelName: true,
   address: true,
   city: true,
   country: true,
@@ -16,7 +16,7 @@ export const CreateHotelDTO = HotelSchema.pick({
 export type CreateHotelDTO = z.infer<typeof CreateHotelDTO>;
 
 export const UpdateHotelDTO = HotelSchema.pick({
-  hotelname: true,
+  hotelName: true,
   address: true,
   city: true,
   country: true,
