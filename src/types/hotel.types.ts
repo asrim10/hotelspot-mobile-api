@@ -9,6 +9,7 @@ export const HotelSchema = z.object({
   description: z.string().optional(),
   price: z.number().min(0),
   availableRooms: z.number().min(0),
+  imageUrl: z.string().optional(),
 });
 
 export type HotelType = z.infer<typeof HotelSchema>;
