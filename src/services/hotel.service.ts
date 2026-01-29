@@ -1,5 +1,6 @@
 import { HotelModel, IHotel } from "../models/hotel.model";
 import { CreateHotelDTO, UpdateHotelDTO } from "../dtos/hotel.dto";
+import { HttpError } from "../errors/http-error";
 import mongoose from "mongoose";
 
 export class HotelService {
@@ -36,11 +37,17 @@ export class HotelService {
   /**
    * Get a single hotel by ID
    */
-  async getHotelById(id: string): Promise<IHotel | null> {
+  async getHotelById(id: string): Promise<IHotel> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid hotel ID format");
+      throw new HttpError(400, "Invalid hotel ID format");
     }
-    return await HotelModel.findById(id);
+
+    const hotel = await HotelModel.findById(id);
+    if (!hotel) {
+      throw new HttpError(404, "Hotel not found");
+    }
+
+    return hotel;
   }
 
   /**
@@ -54,35 +61,48 @@ export class HotelService {
   /**
    * Update an existing hotel
    */
-  async updateHotel(
-    id: string,
-    hotelData: UpdateHotelDTO,
-  ): Promise<IHotel | null> {
+  async updateHotel(id: string, hotelData: UpdateHotelDTO): Promise<IHotel> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid hotel ID format");
+      throw new HttpError(400, "Invalid hotel ID format");
     }
 
-    return await HotelModel.findByIdAndUpdate(
+    const hotel = await HotelModel.findByIdAndUpdate(
       id,
       { $set: hotelData },
       { new: true, runValidators: true },
     );
+
+    if (!hotel) {
+      throw new HttpError(404, "Hotel not found");
+    }
+
+    return hotel;
   }
 
   /**
    * Delete a hotel
    */
-  async deleteHotel(id: string): Promise<IHotel | null> {
+  async deleteHotel(id: string): Promise<IHotel> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid hotel ID format");
+      throw new HttpError(400, "Invalid hotel ID format");
     }
-    return await HotelModel.findByIdAndDelete(id);
+
+    const hotel = await HotelModel.findByIdAndDelete(id);
+    if (!hotel) {
+      throw new HttpError(404, "Hotel not found");
+    }
+
+    return hotel;
   }
 
   /**
    * Search hotels by name
    */
   async searchHotelsByName(searchTerm: string): Promise<IHotel[]> {
+    if (!searchTerm || searchTerm.trim().length === 0) {
+      throw new HttpError(400, "Search term is required");
+    }
+
     return await HotelModel.find({
       hotelname: { $regex: searchTerm, $options: "i" },
     });
@@ -92,6 +112,10 @@ export class HotelService {
    * Get hotels by availability
    */
   async getAvailableHotels(minRooms: number = 1): Promise<IHotel[]> {
+    if (minRooms < 0) {
+      throw new HttpError(400, "Minimum rooms cannot be negative");
+    }
+
     return await HotelModel.find({
       availableRooms: { $gte: minRooms },
     });
@@ -103,24 +127,37 @@ export class HotelService {
   async updateAvailableRooms(
     id: string,
     roomsToDeduct: number,
-  ): Promise<IHotel | null> {
+  ): Promise<IHotel> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid hotel ID format");
+      throw new HttpError(400, "Invalid hotel ID format");
+    }
+
+    if (roomsToDeduct < 1) {
+      throw new HttpError(400, "Rooms to deduct must be at least 1");
     }
 
     const hotel = await HotelModel.findById(id);
     if (!hotel) {
-      throw new Error("Hotel not found");
+      throw new HttpError(404, "Hotel not found");
     }
 
     if (hotel.availableRooms < roomsToDeduct) {
-      throw new Error("Not enough available rooms");
+      throw new HttpError(
+        400,
+        `Not enough available rooms. Only ${hotel.availableRooms} rooms available`,
+      );
     }
 
-    return await HotelModel.findByIdAndUpdate(
+    const updatedHotel = await HotelModel.findByIdAndUpdate(
       id,
       { $inc: { availableRooms: -roomsToDeduct } },
       { new: true },
     );
+
+    if (!updatedHotel) {
+      throw new HttpError(500, "Failed to update hotel");
+    }
+
+    return updatedHotel;
   }
 }
