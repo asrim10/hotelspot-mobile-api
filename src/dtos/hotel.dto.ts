@@ -24,6 +24,7 @@ export const UpdateHotelDTO = HotelSchema.pick({
   description: true,
   price: true,
   availableRooms: true,
+  imageUrl: true,
 }).partial();
 
 export type UpdateHotelDTO = z.infer<typeof UpdateHotelDTO>;

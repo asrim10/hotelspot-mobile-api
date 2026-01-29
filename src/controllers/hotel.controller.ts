@@ -67,7 +67,7 @@ export class HotelController {
 
   /**
    * POST /api/hotels
-   * Create a new hotel
+   * Create a new hotel with optional image upload
    */
   createHotel = async (
     req: Request,
@@ -75,7 +75,13 @@ export class HotelController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const validatedData = CreateHotelDTO.parse(req.body);
+      // Add image URL if file was uploaded
+      const hotelData = {
+        ...req.body,
+        imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
+      };
+
+      const validatedData = CreateHotelDTO.parse(hotelData);
       const hotel = await this.hotelService.createHotel(validatedData);
 
       res.status(201).json({
@@ -94,7 +100,7 @@ export class HotelController {
 
   /**
    * PUT /api/hotels/:id
-   * Update an existing hotel
+   * Update an existing hotel with optional image upload
    */
   updateHotel = async (
     req: Request,
@@ -103,7 +109,14 @@ export class HotelController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const validatedData = UpdateHotelDTO.parse(req.body);
+
+      // Add image URL if file was uploaded
+      const hotelData = {
+        ...req.body,
+        ...(req.file && { imageUrl: `/uploads/${req.file.filename}` }),
+      };
+
+      const validatedData = UpdateHotelDTO.parse(hotelData);
 
       const hotel = await this.hotelService.updateHotel(id, validatedData);
 
@@ -117,6 +130,35 @@ export class HotelController {
         next(new HttpError(400, "Validation error"));
         return;
       }
+      next(error);
+    }
+  };
+
+  /**
+   * PATCH /api/hotels/:id/image
+   * Update hotel image only
+   */
+  updateHotelImage = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      if (!req.file) {
+        throw new HttpError(400, "No image file provided");
+      }
+
+      const imageUrl = `/uploads/${req.file.filename}`;
+      const hotel = await this.hotelService.updateHotel(id, { imageUrl });
+
+      res.status(200).json({
+        success: true,
+        message: "Hotel image updated successfully",
+        data: hotel,
+      });
+    } catch (error) {
       next(error);
     }
   };
