@@ -6,6 +6,7 @@ import { PORT } from "./config";
 
 import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin/user.routes";
+import hotelRoutes from "./routes/hotel.routes";
 dotenv.config();
 
 console.log(process.env.PORT);
@@ -15,6 +16,7 @@ app.use(bodyParser.json());
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin/users", adminRoutes);
+app.use("/api/v1/hotels", hotelRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
