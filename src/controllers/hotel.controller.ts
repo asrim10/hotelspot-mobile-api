@@ -71,19 +71,9 @@ export class HotelController {
   /**
    * POST /api/hotels
    */
-  createHotel = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  createHotel = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const hotelPayload = {
-        ...req.body,
-        imageUrl: req.file ? `/uploads/images/${req.file.filename}` : undefined,
-      };
-
-      // Validate using Zod schema
-      const validatedData = CreateHotelDTO.parse(hotelPayload);
+      const validatedData = CreateHotelDTO.parse(req.body);
 
       const hotel = await this.hotelService.createHotel(validatedData);
 
@@ -302,29 +292,31 @@ export class HotelController {
   /**
    * POST /api/hotels/upload-photo
    */
-  uploadHotelPhoto = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  async uploadHotelPhoto(req: Request, res: Response) {
     try {
       if (!req.file) {
-        throw new HttpError(400, "No photo file provided");
+        return res.status(400).json({
+          success: false,
+          message: "No photo file provided",
+        });
       }
 
-      res.status(200).json({
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+
+      return res.status(200).json({
         success: true,
-        message: "Photo uploaded successfully",
+        message: "Image uploaded successfully",
         data: {
-          filename: req.file.filename,
-          path: req.file.path,
-          size: req.file.size,
+          imageUrl,
         },
       });
     } catch (error) {
-      next(error);
+      return res.status(500).json({
+        success: false,
+        message: "Image upload failed",
+      });
     }
-  };
+  }
 
   /**
    * POST /api/hotels/upload-video
