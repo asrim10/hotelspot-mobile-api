@@ -81,3 +81,7 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Uploads / Images
+uploads/*
+!uploads/.gitkeep

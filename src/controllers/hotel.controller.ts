@@ -298,4 +298,58 @@ export class HotelController {
       }
     }
   };
+
+  /**
+   * POST /api/hotels/upload-photo
+   */
+  uploadHotelPhoto = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.file) {
+        throw new HttpError(400, "No photo file provided");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Photo uploaded successfully",
+        data: {
+          filename: req.file.filename,
+          path: req.file.path,
+          size: req.file.size,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * POST /api/hotels/upload-video
+   */
+  uploadHotelVideo = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.file) {
+        throw new HttpError(400, "No video file provided");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Video uploaded successfully",
+        data: {
+          filename: req.file.filename,
+          path: req.file.path,
+          size: req.file.size,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
