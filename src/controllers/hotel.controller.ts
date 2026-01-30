@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
+import z from "zod";
 import { HotelService } from "../services/hotel.service";
-import { CreateHotelDTO, UpdateHotelDTO } from "../dtos/hotel.dto";
 import { HttpError } from "../errors/http-error";
-import { ZodError } from "zod";
+import { CreateHotelDTO, UpdateHotelDTO } from "../dtos/hotel.dto";
 
 export class HotelController {
   private hotelService: HotelService;
@@ -13,7 +13,6 @@ export class HotelController {
 
   /**
    * GET /api/hotels
-   * Get all hotels with optional filters
    */
   getAllHotels = async (
     req: Request,
@@ -26,9 +25,9 @@ export class HotelController {
       const filters = {
         city: city as string,
         country: country as string,
-        minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
-        maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
-        minRating: minRating ? parseFloat(minRating as string) : undefined,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        minRating: minRating ? Number(minRating) : undefined,
       };
 
       const hotels = await this.hotelService.getAllHotels(filters);
@@ -45,7 +44,6 @@ export class HotelController {
 
   /**
    * GET /api/hotels/:id
-   * Get a single hotel by ID
    */
   getHotelById = async (
     req: Request,
@@ -54,6 +52,11 @@ export class HotelController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
+
+      if (!id) {
+        throw new HttpError(400, "Hotel ID is required");
+      }
+
       const hotel = await this.hotelService.getHotelById(id);
 
       res.status(200).json({
@@ -67,7 +70,6 @@ export class HotelController {
 
   /**
    * POST /api/hotels
-   * Create a new hotel with optional image upload
    */
   createHotel = async (
     req: Request,
@@ -75,13 +77,14 @@ export class HotelController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      // Add image URL if file was uploaded
-      const hotelData = {
+      const hotelPayload = {
         ...req.body,
-        imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
+        imageUrl: req.file ? `/uploads/images/${req.file.filename}` : undefined,
       };
 
-      const validatedData = CreateHotelDTO.parse(hotelData);
+      // Validate using Zod schema
+      const validatedData = CreateHotelDTO.parse(hotelPayload);
+
       const hotel = await this.hotelService.createHotel(validatedData);
 
       res.status(201).json({
@@ -90,17 +93,16 @@ export class HotelController {
         data: hotel,
       });
     } catch (error) {
-      if (error instanceof ZodError) {
-        next(new HttpError(400, "Validation error"));
-        return;
+      if (error instanceof z.ZodError) {
+        next(new HttpError(400, error.issues[0].message));
+      } else {
+        next(error);
       }
-      next(error);
     }
   };
 
   /**
    * PUT /api/hotels/:id
-   * Update an existing hotel with optional image upload
    */
   updateHotel = async (
     req: Request,
@@ -110,13 +112,19 @@ export class HotelController {
     try {
       const { id } = req.params;
 
-      // Add image URL if file was uploaded
-      const hotelData = {
+      if (!id) {
+        throw new HttpError(400, "Hotel ID is required");
+      }
+
+      const hotelPayload = {
         ...req.body,
-        ...(req.file && { imageUrl: `/uploads/${req.file.filename}` }),
+        ...(req.file && {
+          imageUrl: `/uploads/images/${req.file.filename}`,
+        }),
       };
 
-      const validatedData = UpdateHotelDTO.parse(hotelData);
+      // Validate using Zod schema
+      const validatedData = UpdateHotelDTO.parse(hotelPayload);
 
       const hotel = await this.hotelService.updateHotel(id, validatedData);
 
@@ -126,17 +134,16 @@ export class HotelController {
         data: hotel,
       });
     } catch (error) {
-      if (error instanceof ZodError) {
-        next(new HttpError(400, "Validation error"));
-        return;
+      if (error instanceof z.ZodError) {
+        next(new HttpError(400, error.issues[0].message));
+      } else {
+        next(error);
       }
-      next(error);
     }
   };
 
   /**
    * PATCH /api/hotels/:id/image
-   * Update hotel image only
    */
   updateHotelImage = async (
     req: Request,
@@ -146,11 +153,16 @@ export class HotelController {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        throw new HttpError(400, "Hotel ID is required");
+      }
+
       if (!req.file) {
         throw new HttpError(400, "No image file provided");
       }
 
-      const imageUrl = `/uploads/${req.file.filename}`;
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+
       const hotel = await this.hotelService.updateHotel(id, { imageUrl });
 
       res.status(200).json({
@@ -165,7 +177,6 @@ export class HotelController {
 
   /**
    * DELETE /api/hotels/:id
-   * Delete a hotel
    */
   deleteHotel = async (
     req: Request,
@@ -174,6 +185,11 @@ export class HotelController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
+
+      if (!id) {
+        throw new HttpError(400, "Hotel ID is required");
+      }
+
       const hotel = await this.hotelService.deleteHotel(id);
 
       res.status(200).json({
@@ -188,7 +204,6 @@ export class HotelController {
 
   /**
    * GET /api/hotels/search/:searchTerm
-   * Search hotels by name
    */
   searchHotels = async (
     req: Request,
@@ -197,6 +212,11 @@ export class HotelController {
   ): Promise<void> => {
     try {
       const { searchTerm } = req.params;
+
+      if (!searchTerm) {
+        throw new HttpError(400, "Search term is required");
+      }
+
       const hotels = await this.hotelService.searchHotelsByName(searchTerm);
 
       res.status(200).json({
@@ -210,8 +230,7 @@ export class HotelController {
   };
 
   /**
-   * GET /api/hotels/available/:minRooms?
-   * Get available hotels
+   * GET /api/hotels/available/:minRooms
    */
   getAvailableHotels = async (
     req: Request,
@@ -219,7 +238,12 @@ export class HotelController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const minRooms = req.params.minRooms ? parseInt(req.params.minRooms) : 1;
+      const minRooms = req.params.minRooms ? Number(req.params.minRooms) : 1;
+
+      if (minRooms < 1) {
+        throw new HttpError(400, "Minimum rooms must be greater than 0");
+      }
+
       const hotels = await this.hotelService.getAvailableHotels(minRooms);
 
       res.status(200).json({
@@ -234,7 +258,6 @@ export class HotelController {
 
   /**
    * PATCH /api/hotels/:id/rooms
-   * Update available rooms
    */
   updateAvailableRooms = async (
     req: Request,
@@ -245,13 +268,21 @@ export class HotelController {
       const { id } = req.params;
       const { roomsToDeduct } = req.body;
 
-      if (!roomsToDeduct || roomsToDeduct < 1) {
-        throw new HttpError(400, "Invalid number of rooms to deduct");
+      if (!id) {
+        throw new HttpError(400, "Hotel ID is required");
       }
+
+      const roomsSchema = z.object({
+        roomsToDeduct: z.coerce
+          .number()
+          .positive("Rooms to deduct must be a positive number"),
+      });
+
+      const validatedRooms = roomsSchema.parse({ roomsToDeduct });
 
       const hotel = await this.hotelService.updateAvailableRooms(
         id,
-        roomsToDeduct,
+        validatedRooms.roomsToDeduct,
       );
 
       res.status(200).json({
@@ -260,7 +291,11 @@ export class HotelController {
         data: hotel,
       });
     } catch (error) {
-      next(error);
+      if (error instanceof z.ZodError) {
+        next(new HttpError(400, error.issues[0].message));
+      } else {
+        next(error);
+      }
     }
   };
 }

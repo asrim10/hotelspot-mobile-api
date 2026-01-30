@@ -4,7 +4,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 const HotelSchema: Schema = new Schema<HotelType>(
   {
-    hotelname: { type: String, required: true },
+    hotelName: { type: String, required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },
     country: { type: String, required: true },

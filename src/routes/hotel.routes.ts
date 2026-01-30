@@ -7,7 +7,7 @@ const hotelController = new HotelController();
 
 router.get("/", hotelController.getAllHotels);
 router.get("/search/:searchTerm", hotelController.searchHotels);
-router.get("/available/:minRooms?", hotelController.getAvailableHotels);
+router.get("/available/:minRooms", hotelController.getAvailableHotels);
 router.get("/:id", hotelController.getHotelById);
 router.post("/", uploads.single("image"), hotelController.createHotel);
 router.put("/:id", uploads.single("image"), hotelController.updateHotel);

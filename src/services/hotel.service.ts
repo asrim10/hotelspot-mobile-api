@@ -104,7 +104,7 @@ export class HotelService {
     }
 
     return await HotelModel.find({
-      hotelname: { $regex: searchTerm, $options: "i" },
+      hotelName: { $regex: searchTerm, $options: "i" },
     });
   }
 
