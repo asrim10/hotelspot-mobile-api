@@ -14,6 +14,7 @@ dotenv.config();
 console.log(process.env.PORT);
 
 const app: Application = express();
+app.use("/uploads", express.static("uploads"));
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 

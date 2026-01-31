@@ -5,7 +5,7 @@ import fs from "fs";
 import { Request } from "express";
 import { HttpError } from "../errors/http-error";
 // Ensure the uploads directory exists
-const uploadDir = path.join(__dirname, "../../uploads");
+const uploadDir = path.join(__dirname, "../../uploads/images");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
