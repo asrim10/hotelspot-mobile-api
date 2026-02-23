@@ -17,7 +17,7 @@ router.get("/:id", authorizedMiddleware, (req, res) =>
   bookingController.getBookingById(req, res),
 );
 
-router.put("/:id", authorizedMiddleware, (req, res) =>
+router.patch("/:id", authorizedMiddleware, (req, res) =>
   bookingController.updateBooking(req, res),
 );
 
