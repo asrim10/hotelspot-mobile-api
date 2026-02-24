@@ -6,6 +6,7 @@ export const CreateUserDTO = UserSchema.pick({
   email: true,
   password: true,
   fullName: true,
+  imageUrl: true,
 })
   .extend({ confirmPassword: z.string().min(6) })
   .refine((data) => data.password == data.confirmPassword, {
@@ -21,16 +22,5 @@ export const LoginUserDTO = z.object({
 });
 export type LoginUserDTO = z.infer<typeof LoginUserDTO>;
 
-export const UpdateUserDTO = UserSchema.pick({
-  username: true,
-  email: true,
-  fullName: true,
-}).partial();
-
+export const UpdateUserDTO = UserSchema.partial();
 export type UpdateUserDTO = z.infer<typeof UpdateUserDTO>;
-
-export const DeleteUserDTO = z.object({
-  id: z.string().uuid(),
-});
-
-export type DeleteUserDTO = z.infer<typeof DeleteUserDTO>;

@@ -1,4 +1,3 @@
-import { tr } from "zod/v4/locales";
 import { UserModel, IUser } from "../models/user.model";
 
 export interface IUserRepository {
@@ -7,7 +6,6 @@ export interface IUserRepository {
   getUserByUsername(username: string): Promise<IUser | null>;
   //Additional
   getUserByID(id: string): Promise<IUser | null>;
-  getAllUsers(): Promise<IUser[]>;
   updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
   deleteUserById(id: string): Promise<boolean>;
 }
@@ -30,18 +28,14 @@ export class UserRepository implements IUserRepository {
     const user = await UserModel.findById(id);
     return user;
   }
-  async getAllUsers(): Promise<IUser[]> {
-    const users = await UserModel.find();
-    return users;
-  }
   async updateUser(
     id: string,
-    updateData: Partial<IUser>
+    updateData: Partial<IUser>,
   ): Promise<IUser | null> {
     const updateUser = await UserModel.findByIdAndUpdate(
       id,
       updateData,
-      { new: true } // return updated document
+      { new: true }, // return updated document
     );
     return updateUser;
   }

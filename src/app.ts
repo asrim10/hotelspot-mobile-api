@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import bookingRoutes from "./routes/booking.routes";
 import favourtieRoutes from "./routes/favourite.routes";
-import adminRoutes from "./routes/admin/user.routes";
 import hotelRoutes from "./routes/hotel.routes";
 
 import path from "path";
@@ -23,7 +22,6 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/admin/users", adminRoutes);
 app.use("/api/v1/hotels", hotelRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/favourites", favourtieRoutes);
