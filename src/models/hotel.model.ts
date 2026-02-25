@@ -8,6 +8,10 @@ const HotelSchema: Schema = new Schema<HotelType>(
     address: { type: String, required: true },
     city: { type: String, required: true },
     country: { type: String, required: true },
+    coordinates: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
     rating: { type: Number, required: false },
     description: { type: String, required: false },
     price: { type: Number, required: true },
