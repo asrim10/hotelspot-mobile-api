@@ -19,6 +19,8 @@ export const BookingSchema = z
     status: z
       .enum(["pending", "confirmed", "cancelled", "checked_in", "checked_out"])
       .default("pending"),
+    pidx: z.string().optional(),
+    transactionId: z.string().optional(),
   })
   .refine((data) => new Date(data.checkOutDate) > new Date(data.checkInDate), {
     message: "Check-out date must be after check-in date",

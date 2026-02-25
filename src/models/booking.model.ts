@@ -30,7 +30,10 @@ const BookingSchema: Schema = new Schema<BookingType>(
       enum: ["pending", "confirmed", "cancelled", "checked_in", "checked_out"],
       default: "pending",
     },
+    pidx: { type: String, required: false },
+    transactionId: { type: String, required: false },
   },
+
   {
     timestamps: true,
   },
