@@ -8,6 +8,7 @@ import bookingRoutes from "./routes/booking.routes";
 import favourtieRoutes from "./routes/favourite.routes";
 import hotelRoutes from "./routes/hotel.routes";
 import paymentRoutes from "./routes/payment.routes";
+import reviewRoutes from "./routes/review.routes";
 
 import path from "path";
 import { HttpError } from "./errors/http-error";
@@ -36,6 +37,7 @@ app.use("/api/v1/hotels", hotelRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/favourites", favourtieRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/review", reviewRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
